@@ -1,0 +1,33 @@
+This document will describe how the program can be run and how the scheduling algorithms have been implemented.
+
+To run the code, place the compiled executable in the same folder as a text file named "processes.txt" and run it. "processes.txt" should contain multiple rows, each with 3 integers separated by space: id arrival_time runtime. The default quantum is 2, but to change it, you can change the value of "quantum" at line 127 (the fifth line of main).
+
+Every process is kept as a struct named "process". It has 5 fields:
+1. id -> the id of the process
+2. arrival -> the arrival time of the process
+3. runtime -> how long the process will be run for
+4. finish -> when did the process finish after a certain scheduling algorithm did its job
+5. currentTime -> how long has this process been running till now (now referring to some time when the scheduling algorithm was working)
+
+The code starts from the "main()" function. An input stream for reading files is created (in), and the input is taken from the "processes.txt" file. Then the inputs are converted into "process" struct and kept in a std::vector. After that, the processes are sorted by their arrival time, and the scheduling algorithms are run one by one. During all these scheduling functions, we use pointers to the processes. The reason is that we make changes to the fields of the objects when we are processing them through the scheduling algorithms. However, if we change only in the queue or the set (specified in the upcoming function descriptions), they will not be changed in the original vector, and the stats will not be calculated properly.
+
+First Come First Served (first_come):
+    The processes should be run when they come, until they are finished. Queue could be used, but there is already a data structure that keeps them, so just a pointer (leftPointer) pointing at the current process that is running is enough. There is also a variable that keeps track of what time we are at now. Until all the processes are finished, we first check if the current process is finished (currentTime = runtime). If that is the case, we update its finish time (so that we can find the statistics later on) and move the pointer to the next process. If not, then we take the one the pointer is pointing at and update its runtime because at this time that process will be running. Then we print which process is running right now and increase the time. If there are still processes that have not been run yet, but they have not arrived either, and we do not have any processes that are running currently, then we print "idle" by sending -1 as "id" to "printProcess". After all the processes are finished, we print the statistics about wait time, turnaround time, and CPU usage.
+
+Shortest Remaining Time First (shortest_remaining_first):
+    Unlike the FCRS, we cannot work with just a vector this time because we have to know which process has the least time remaining. It is possible to do it with just vector, but the algorithm will work much slower because we would have to traverse through all the processes every time. So, we used std::set, which is a red-black tree working in the background. To sort the processes by their remaining time, we implemented a custom comparator for them and used it for the set. As before, we still have a pointer and time. Then we process all the processes until there are none left. First, we add all the processes that start at the current time to the set. Then we take the first element of the set, which is the one with the shortest remaining time. If it is finished, we update its finish time and remove it from the set. Then, if there is any element in the set, we update the first one, as it will be the one to be run at the current time. However, we cannot just update it because set rebalances itself only when something is inserted into or deleted from it. So, we have to remove and insert it again, which will take log2(n) time. Then again, we print the process that will be run now and increase the time. After all the processes are finished, we print the stats.
+
+Round Robin (round_robin):
+    This time we used queue instead of set because we need first come, first served at the core but not to let any process work for a long time. We will have additional curQuanta to show how much of the quantum has been used at the time "time". Then the processing starts. First, we add all the processes that start at the current time. Then check if the process that was running has finished. If it has, then we reset the current quanta, remove it from the queue, and update its finish time. If it is not finished, we check to see if the time given for the process is up. If so, then we remove it and add it to the end of the queue, then reset the current quanta. Then run the process that is at the front of the queue, update quanta and process, print it, and update the time. At the end, we print stats again.
+
+Printing process log (printProcess):
+    Given the id of the process and time, we print which process is being run at the time "time". If the "id" is -1, then that means there is no running process, and "no running process" is printed.
+
+Printing the stats (printStats):
+    Every process has its arrival time, the time they finished, and its burst time. Using these, for each of them, we can calculate their turnaround and wait time, consequently average of all of them. We know how much each process needs to be run, so we know the total amount of time that the CPU has been busy for. We also know when all the processes finished at the end, so using these two variables, we can find the percentage of time where the CPU has been used.
+
+Comparator for sorting processes by their arrival time (cmpArrival):
+    A simple comparator for sorting the processes. If two processes have arrived at the same time, then sort them lexicographically by their id. Otherwise, we compare their arrival times and sort by them.
+
+Comparator for sorting processes by the remaining time left for them (cmpTimeLeft):
+    Again, we check to see if they have the same amount of time left to run, and then we sort by their id. Otherwise, we can sort them by their remaining time.
