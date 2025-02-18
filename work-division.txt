@@ -1,0 +1,5 @@
+• Each team member mainly worked on one algorithm: Ibrahim Taghizade – Round-Robin Algorithm; Hajar Naghiyeva – First-Come-First-Served Algorithm; Aykhan Aghayev – Shortest Remaining Time First.
+• Every time we discussed with each all the details and the logic & implementation process.
+• In the end, Ibrahim Taghizade combined all the algorithms and completed the code by adding the necessary details and uniting all parts.
+• All together worked on readme – design notes file.
+• All together worked on the presentation design & structure.
